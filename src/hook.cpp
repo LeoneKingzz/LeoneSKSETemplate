@@ -336,6 +336,76 @@ namespace hooks
 		return result;
 	}
 
+	int GetPlayerFollowerCount()
+	{
+		int result = 0;
+
+		if (const auto processLists = RE::ProcessLists::GetSingleton(); processLists)
+		{
+			for (auto &actorHandle : processLists->highActorHandles)
+			{
+				if (auto actor = actorHandle.get(); actor && actor->IsPlayerTeammate() && actor->Is3DLoaded() && !actor->HasKeywordString("ActorTypeHorse"))
+				{
+					result += 1;
+				}
+			}
+		}
+
+		return result;
+	}
+
+	void AdjustDifficulty(Difficulty level)
+	{
+		constexpr auto set_gmst = [](const char *a_name, float a_value)
+		{
+			if (auto gameSetting = RE::GameSettingCollection::GetSingleton()->GetSetting(a_name))
+			{
+				gameSetting->data.f = a_value;
+			}
+		};
+
+		float damageBy = 1.0f;
+		float damageTo = 1.0f;
+
+		switch (level)
+		{
+		case Difficulty::Adept:
+			damageBy = 1.0f;
+			damageTo = 1.0f;
+			break;
+
+		case Difficulty::Expert:
+			damageBy = 0.75f;
+			damageTo = 1.17f;
+			break;
+
+		case Difficulty::Master:
+			damageBy = 0.50f;
+			damageTo = 1.34f;
+			break;
+
+		case Difficulty::Legendary:
+			damageBy = 0.25f;
+			damageTo = 1.51f;
+			break;
+
+		default:
+			break;
+		}
+		set_gmst("fDiffMultHPByPCVE", damageBy);
+		set_gmst("fDiffMultHPByPCE", damageBy);
+		set_gmst("fDiffMultHPByPCN", damageBy);
+		set_gmst("fDiffMultHPByPCH", damageBy);
+		set_gmst("fDiffMultHPByPCVH", damageBy);
+		set_gmst("fDiffMultHPByPCL", damageBy);
+
+		set_gmst("fDiffMultHPToPCVE", damageTo);
+		set_gmst("fDiffMultHPToPCE", damageTo);
+		set_gmst("fDiffMultHPToPCN", damageTo);
+		set_gmst("fDiffMultHPToPCH", damageTo);
+		set_gmst("fDiffMultHPToPCVH", damageTo);
+		set_gmst("fDiffMultHPToPCL", damageTo);
+	}
 
 	class OurEventSink :
 		public RE::BSTEventSink<RE::TESSwitchRaceCompleteEvent>,
@@ -444,27 +514,73 @@ namespace hooks
 		}
 
 		RE::BSEventNotifyControl ProcessEvent(const RE::TESCombatEvent* event, RE::BSTEventSource<RE::TESCombatEvent>*){
+			
 			auto a_actor = event->actor->As<RE::Actor>();
 
-			if (!a_actor || a_actor->IsPlayerRef()) {
+			if (!a_actor) {
 				return RE::BSEventNotifyControl::kContinue;
 			}
 
-			switch (event->newState.get()) {
-			case RE::ACTOR_COMBAT_STATE::kCombat:
+			// switch (event->newState.get()) {
+			// case RE::ACTOR_COMBAT_STATE::kCombat:
 
+			// 	break;
+
+			// case RE::ACTOR_COMBAT_STATE::kSearching:
+
+			// 	break;
+
+			// case RE::ACTOR_COMBAT_STATE::kNone:
+
+
+			// 	break;
+
+			// default:
+			// 	break;
+			// }
+
+			const auto followerCount = GetPlayerFollowerCount();
+
+			switch (followerCount)
+			{
+			case 0:
+				if (difficulty.level != Difficulty::Adept)
+				{
+					difficulty.level = Difficulty::Adept;
+
+					AdjustDifficulty(Difficulty::Adept);
+				}
 				break;
 
-			case RE::ACTOR_COMBAT_STATE::kSearching:
+			case 1:
+				if (difficulty.level != Difficulty::Expert)
+				{
+					difficulty.level = Difficulty::Expert;
 
+					AdjustDifficulty(Difficulty::Expert);
+				}
 				break;
 
-			case RE::ACTOR_COMBAT_STATE::kNone:
+			case 2:
+				if (difficulty.level != Difficulty::Master)
+				{
+					difficulty.level = Difficulty::Master;
 
-
+					AdjustDifficulty(Difficulty::Master);
+				}
 				break;
 
 			default:
+
+				if (followerCount >= 3)
+				{
+					if (difficulty.level != Difficulty::Legendary)
+					{
+						difficulty.level = Difficulty::Legendary;
+
+						AdjustDifficulty(Difficulty::Legendary);
+					}
+				}
 				break;
 			}
 
@@ -735,6 +851,37 @@ namespace hooks
 		RE::ConditionCheckParams params(const_cast<RE::TESObjectREFR *>(p_ally->As<RE::TESObjectREFR>()),
 										const_cast<RE::TESObjectREFR *>(a_actor->As<RE::TESObjectREFR>()));
 		return cond(params);
+	}
+
+	bool IsValidLifeState(RE::Actor *a_actor, bool checkDeath)
+	{
+		if (checkDeath)
+		{
+			switch (a_actor->AsActorState()->GetLifeState())
+			{
+			case RE::ACTOR_LIFE_STATE::kDying:
+			case RE::ACTOR_LIFE_STATE::kDead:
+				return false;
+
+			default:
+				return true;
+			}
+		}
+		else
+		{
+			switch (a_actor->AsActorState()->GetLifeState())
+			{
+			case RE::ACTOR_LIFE_STATE::kBleedout:
+			case RE::ACTOR_LIFE_STATE::kDying:
+			case RE::ACTOR_LIFE_STATE::kDead:
+			case RE::ACTOR_LIFE_STATE::kUnconcious:
+			case RE::ACTOR_LIFE_STATE::kEssentialDown:
+				return false;
+
+			default:
+				return true;
+			}
+		}
 	}
 
 	RE::BSEventNotifyControl animEventHandler::HookedProcessEvent(RE::BSAnimationGraphEvent& a_event, RE::BSTEventSource<RE::BSAnimationGraphEvent>* src)

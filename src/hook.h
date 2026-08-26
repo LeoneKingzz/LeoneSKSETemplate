@@ -49,7 +49,7 @@ namespace hooks
 	bool HasBoundWeaponEquipped(const RE::Actor *a_actor, RE::MagicSystem::CastingSource type);
 	bool GetLineOfSight(const RE::Actor *a_actor, const RE::Actor *a_target, float a_comparison_value);
 	bool GetIsGhost(const RE::Actor *a_actor, float a_comparison_value);
-
+	bool IsValidLifeState(RE::Actor *a_actor, bool checkDeath = false);
 
 	template <class T>
 	void copyComponent(RE::TESForm *from, RE::TESForm *to)
@@ -61,6 +61,26 @@ namespace hooks
 			toT->CopyComponent(fromT);
 		}
 	}
+
+	int GetPlayerFollowerCount();
+
+	// Difficulty
+	enum class Difficulty : std::uint8_t
+	{
+		Adept = 0,	      // Adept
+		Expert = 1,	      // Expert
+		Master = 2,       // Master
+		Legendary = 3,	  // Legendary
+	};
+
+	// Combat context information (multiple enemies, allies, threat assessment)
+	struct DifficultyState
+	{
+		Difficulty level = Difficulty::Adept;
+
+	}difficulty;
+
+	void AdjustDifficulty(Difficulty level);
 
 	class animEventHandler
 	{
@@ -176,6 +196,45 @@ namespace hooks
 		static bool GetBoolVariable(RE::Actor *a_actor, std::string a_string);
 		static int GetIntVariable(RE::Actor *a_actor, std::string a_string);
 		static float GetFloatVariable(RE::Actor *a_actor, std::string a_string);
+
+		std::vector<RE::Actor *> GetPlayerFollowers()
+		{
+			std::vector<RE::Actor *> result;
+
+			if (const auto processLists = RE::ProcessLists::GetSingleton(); processLists)
+			{
+				for (auto &actorHandle : processLists->highActorHandles)
+				{
+					if (auto actor = actorHandle.get(); actor && actor->IsPlayerTeammate())
+					{
+						result.push_back(actor.get());
+					}
+				}
+			}
+
+			return result;
+		};
+		std::vector<RE::Actor *> GetCommandedActors(RE::Actor *a_actor)
+		{
+			std::vector<RE::Actor *> result;
+
+			if (a_actor->GetActorRuntimeData().currentProcess)
+			{
+				if (const auto middleHigh = a_actor->GetActorRuntimeData().currentProcess->middleHigh; middleHigh)
+				{
+					for (auto &commandedActorData : middleHigh->commandedActors)
+					{
+						const auto commandedActor = commandedActorData.commandedActor.get();
+						if (commandedActor)
+						{
+							result.push_back(commandedActor.get());
+						}
+					}
+				}
+			}
+
+			return result;
+		};
 
 		static bool getrace_IsWerebeast(RE::Actor *a_actor)
 		{
