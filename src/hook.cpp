@@ -92,55 +92,20 @@ namespace hooks
 				}
 				break;
 
-			case 1:
-				if ((int)difficulty.currentlevel != (int)difficulty.BasePreference + 1)
-				{
-					if (((int)difficulty.BasePreference + (Settings::GetSingleton()->general.iDiffIncrement * 1)) > 5)
-					{
-						difficulty.currentlevel = Difficulty::Legendary;
-					}
-					else
-					{
-						difficulty.currentlevel = (Difficulty)((int)difficulty.BasePreference + (Settings::GetSingleton()->general.iDiffIncrement * 1));
-					}
-
-					AdjustDifficulty(difficulty.currentlevel);
-				}
-				break;
-
-			case 2:
-				if ((int)difficulty.currentlevel != (int)difficulty.BasePreference + 2)
-				{
-					if (((int)difficulty.BasePreference + (Settings::GetSingleton()->general.iDiffIncrement * 2)) > 5)
-					{
-						difficulty.currentlevel = Difficulty::Legendary;
-					}
-					else
-					{
-						difficulty.currentlevel = (Difficulty)((int)difficulty.BasePreference + (Settings::GetSingleton()->general.iDiffIncrement * 2));
-					}
-
-					AdjustDifficulty(difficulty.currentlevel);
-				}
-				break;
-
 			default:
 
-				if (followerCount >= 3)
+				if ((int)difficulty.currentlevel != (int)difficulty.BasePreference + (Settings::GetSingleton()->general.iDiffIncrement * followerCount))
 				{
-					if ((int)difficulty.currentlevel != (int)difficulty.BasePreference + 3)
+					if (((int)difficulty.BasePreference + (Settings::GetSingleton()->general.iDiffIncrement * followerCount)) > 5)
 					{
-						if (((int)difficulty.BasePreference + (Settings::GetSingleton()->general.iDiffIncrement * 3)) > 5)
-						{
-							difficulty.currentlevel = Difficulty::Legendary;
-						}
-						else
-						{
-							difficulty.currentlevel = (Difficulty)((int)difficulty.BasePreference + (Settings::GetSingleton()->general.iDiffIncrement * 3));
-						}
-
-						AdjustDifficulty(difficulty.currentlevel);
+						difficulty.currentlevel = Difficulty::Legendary;
 					}
+					else
+					{
+						difficulty.currentlevel = (Difficulty)((int)difficulty.BasePreference + (Settings::GetSingleton()->general.iDiffIncrement * followerCount));
+					}
+
+					AdjustDifficulty(difficulty.currentlevel);
 				}
 				break;
 			}

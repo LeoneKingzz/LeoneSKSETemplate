@@ -43,7 +43,6 @@ namespace hooks
 
 	enum class Difficulty : std::uint32_t
 	{
-		None = -1,		// Unset
 		Novice = 0,		// Novice
 		Apprentice = 1, // Apprentice
 		Adept = 2,		// Adept
@@ -54,7 +53,7 @@ namespace hooks
 
 	struct DifficultyState
 	{
-		Difficulty currentlevel = Difficulty::None;
+		Difficulty currentlevel = Difficulty::Novice;
 
 		Difficulty BasePreference = Difficulty::Adept;
 
