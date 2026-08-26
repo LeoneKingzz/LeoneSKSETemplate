@@ -114,6 +114,7 @@ namespace hooks
 			void LoadSettings();
 
 			int iBasePreference = 2;
+			int iDiffIncrement = 1;
 
 			double fDiffMultHPByPCVE = 1.5;
 			double fDiffMultHPByPCE = 1.25;

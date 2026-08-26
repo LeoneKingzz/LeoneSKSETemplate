@@ -95,7 +95,14 @@ namespace hooks
 			case 1:
 				if ((int)difficulty.currentlevel != (int)difficulty.BasePreference + 1)
 				{
-					difficulty.currentlevel = (Difficulty)((int)difficulty.BasePreference + 1);
+					if (((int)difficulty.BasePreference + (Settings::GetSingleton()->general.iDiffIncrement * 1)) > 5)
+					{
+						difficulty.currentlevel = Difficulty::Legendary;
+					}
+					else
+					{
+						difficulty.currentlevel = (Difficulty)((int)difficulty.BasePreference + (Settings::GetSingleton()->general.iDiffIncrement * 1));
+					}
 
 					AdjustDifficulty(difficulty.currentlevel);
 				}
@@ -104,7 +111,14 @@ namespace hooks
 			case 2:
 				if ((int)difficulty.currentlevel != (int)difficulty.BasePreference + 2)
 				{
-					difficulty.currentlevel = (Difficulty)((int)difficulty.BasePreference + 2);
+					if (((int)difficulty.BasePreference + (Settings::GetSingleton()->general.iDiffIncrement * 2)) > 5)
+					{
+						difficulty.currentlevel = Difficulty::Legendary;
+					}
+					else
+					{
+						difficulty.currentlevel = (Difficulty)((int)difficulty.BasePreference + (Settings::GetSingleton()->general.iDiffIncrement * 2));
+					}
 
 					AdjustDifficulty(difficulty.currentlevel);
 				}
@@ -116,7 +130,14 @@ namespace hooks
 				{
 					if ((int)difficulty.currentlevel != (int)difficulty.BasePreference + 3)
 					{
-						difficulty.currentlevel = (Difficulty)((int)difficulty.BasePreference + 3);
+						if (((int)difficulty.BasePreference + (Settings::GetSingleton()->general.iDiffIncrement * 3)) > 5)
+						{
+							difficulty.currentlevel = Difficulty::Legendary;
+						}
+						else
+						{
+							difficulty.currentlevel = (Difficulty)((int)difficulty.BasePreference + (Settings::GetSingleton()->general.iDiffIncrement * 3));
+						}
 
 						AdjustDifficulty(difficulty.currentlevel);
 					}
@@ -231,6 +252,9 @@ namespace hooks
 
 		DS->general.iBasePreference = static_cast<int>(a_ini.GetLongValue(section, "iBasePreference", DS->general.iBasePreference));
 		a_ini.SetLongValue(section, "iBasePreference", DS->general.iBasePreference, ";Base difficulty preference with no followers. Range = 0-5. E.g. 0 = Novice | 5 = Legendary");
+
+		DS->general.iDiffIncrement = static_cast<int>(a_ini.GetLongValue(section, "iDiffIncrement", DS->general.iDiffIncrement));
+		a_ini.SetLongValue(section, "iDiffIncrement", DS->general.iDiffIncrement, ";The amount the increase the difficulty by per follower in player's party");
 
 		DS->general.fDiffMultHPByPCVE = a_ini.GetDoubleValue(section, "fDiffMultHPByPCVE", DS->general.fDiffMultHPByPCVE);
 		DS->general.fDiffMultHPByPCE = a_ini.GetDoubleValue(section, "fDiffMultHPByPCE", DS->general.fDiffMultHPByPCE);
