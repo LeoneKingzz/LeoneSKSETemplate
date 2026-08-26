@@ -230,7 +230,7 @@ namespace hooks
 		auto DS = GetSingleton();
 
 		DS->general.iBasePreference = static_cast<int>(a_ini.GetLongValue(section, "iBasePreference", DS->general.iBasePreference));
-		a_ini.SetLongValue(section, "iBasePreference", DS->general.iBasePreference, ";Base difficulty preference with no followers. E.g. 0 = Novice| 5 = Legendary");
+		a_ini.SetLongValue(section, "iBasePreference", DS->general.iBasePreference, ";Base difficulty preference with no followers. Range = 0-5. E.g. 0 = Novice | 5 = Legendary");
 
 		DS->general.fDiffMultHPByPCVE = a_ini.GetDoubleValue(section, "fDiffMultHPByPCVE", DS->general.fDiffMultHPByPCVE);
 		DS->general.fDiffMultHPByPCE = a_ini.GetDoubleValue(section, "fDiffMultHPByPCE", DS->general.fDiffMultHPByPCE);
