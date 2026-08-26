@@ -356,6 +356,35 @@ namespace hooks
 
 	void AdjustDifficulty(Difficulty level)
 	{
+		auto &diff = RE::PlayerCharacter::GetSingleton()->GetGameStatsData().difficulty;
+
+		switch (level)
+		{
+		case Difficulty::Adept:
+			
+			break;
+
+		case Difficulty::Expert:
+			
+			break;
+
+		case Difficulty::Master:
+			
+			break;
+
+		case Difficulty::Legendary:
+			
+			break;
+
+		default:
+			break;
+		}
+
+		logger::info("Diff {}", diff);
+	}
+
+	void LoadSettings()
+	{
 		constexpr auto set_gmst = [](const char *a_name, float a_value)
 		{
 			if (auto gameSetting = RE::GameSettingCollection::GetSingleton()->GetSetting(a_name))
@@ -364,47 +393,19 @@ namespace hooks
 			}
 		};
 
-		float damageBy = 1.0f;
-		float damageTo = 1.0f;
+		set_gmst("fDiffMultHPByPCVE", 1.0f);
+		set_gmst("fDiffMultHPByPCE", 1.0f);
+		set_gmst("fDiffMultHPByPCN", 1.0f);
+		set_gmst("fDiffMultHPByPCH", 0.75f);
+		set_gmst("fDiffMultHPByPCVH", 0.5f);
+		set_gmst("fDiffMultHPByPCL", 0.25f);
 
-		switch (level)
-		{
-		case Difficulty::Adept:
-			damageBy = 1.0f;
-			damageTo = 1.0f;
-			break;
-
-		case Difficulty::Expert:
-			damageBy = 0.75f;
-			damageTo = 1.17f;
-			break;
-
-		case Difficulty::Master:
-			damageBy = 0.50f;
-			damageTo = 1.34f;
-			break;
-
-		case Difficulty::Legendary:
-			damageBy = 0.25f;
-			damageTo = 1.51f;
-			break;
-
-		default:
-			break;
-		}
-		set_gmst("fDiffMultHPByPCVE", damageBy);
-		set_gmst("fDiffMultHPByPCE", damageBy);
-		set_gmst("fDiffMultHPByPCN", damageBy);
-		set_gmst("fDiffMultHPByPCH", damageBy);
-		set_gmst("fDiffMultHPByPCVH", damageBy);
-		set_gmst("fDiffMultHPByPCL", damageBy);
-
-		set_gmst("fDiffMultHPToPCVE", damageTo);
-		set_gmst("fDiffMultHPToPCE", damageTo);
-		set_gmst("fDiffMultHPToPCN", damageTo);
-		set_gmst("fDiffMultHPToPCH", damageTo);
-		set_gmst("fDiffMultHPToPCVH", damageTo);
-		set_gmst("fDiffMultHPToPCL", damageTo);
+		set_gmst("fDiffMultHPToPCVE", 1.0f);
+		set_gmst("fDiffMultHPToPCE", 1.0f);
+		set_gmst("fDiffMultHPToPCN", 1.0f);
+		set_gmst("fDiffMultHPToPCH", 1.17f);
+		set_gmst("fDiffMultHPToPCVH", 1.34f);
+		set_gmst("fDiffMultHPToPCL", 1.51f);
 	}
 
 	class OurEventSink :

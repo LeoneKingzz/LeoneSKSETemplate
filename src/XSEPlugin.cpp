@@ -9,6 +9,7 @@ void MessageHandler(SKSE::MessagingInterface::Message *a_msg)
 		hooks::OnMeleeHitHook::install();
 		// hooks::InputEventHandler::SinkEventHandlers();
 		//hooks::install_postload();
+		hooks::LoadSettings();
 
 		break;
 

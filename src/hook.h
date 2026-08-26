@@ -50,6 +50,7 @@ namespace hooks
 	bool GetLineOfSight(const RE::Actor *a_actor, const RE::Actor *a_target, float a_comparison_value);
 	bool GetIsGhost(const RE::Actor *a_actor, float a_comparison_value);
 	bool IsValidLifeState(RE::Actor *a_actor, bool checkDeath = false);
+	void LoadSettings();
 
 	template <class T>
 	void copyComponent(RE::TESForm *from, RE::TESForm *to)
