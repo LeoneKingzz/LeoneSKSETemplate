@@ -361,19 +361,19 @@ namespace hooks
 		switch (level)
 		{
 		case Difficulty::Adept:
-			
+			diff = 2;
 			break;
 
 		case Difficulty::Expert:
-			
+			diff = 3;
 			break;
 
 		case Difficulty::Master:
-			
+			diff = 4;
 			break;
 
 		case Difficulty::Legendary:
-			
+			diff = 5;
 			break;
 
 		default:
