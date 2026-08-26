@@ -5,19 +5,12 @@ void MessageHandler(SKSE::MessagingInterface::Message *a_msg)
 	switch (a_msg->type)
 	{
 	case SKSE::MessagingInterface::kDataLoaded:
-		// hooks::animEventHandler::Register(false, true);
-		hooks::OnMeleeHitHook::install();
-		// hooks::InputEventHandler::SinkEventHandlers();
-		//hooks::install_postload();
-		hooks::LoadSettings();
+
+		hooks::DGD::install();
+		hooks::Settings::GetSingleton()->Load();
+		hooks::Settings::GetSingleton()->general.LoadSettings();
 
 		break;
-
-	// case SKSE::MessagingInterface::kPostLoad:
-	// 	hooks::install_postload();
-		
-
-	//     break;
 
 	default:
 
@@ -27,11 +20,10 @@ void MessageHandler(SKSE::MessagingInterface::Message *a_msg)
 
 void Init()
 {
-	hooks::OnMeleeHitHook::install_pluginListener();
 	auto messaging = SKSE::GetMessagingInterface();
 	messaging->RegisterListener("SKSE", MessageHandler);
 }
 
 void Load(){
-	// hooks::OnMeleeHitHook::install_protected();
+	// hooks::DGD::install_protected();
 }
