@@ -47,7 +47,7 @@ namespace hooks
 
 		player->GetGameStatsData().difficulty = (int)level;
 
-		logger::info("Diff {}", player->GetGameStatsData().difficulty);
+		// logger::info("Diff {}", player->GetGameStatsData().difficulty);
 	}
 
 	void SetBaseDifficulty(int level){
