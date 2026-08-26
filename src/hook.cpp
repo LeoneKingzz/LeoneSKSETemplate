@@ -125,48 +125,6 @@ namespace hooks
 		return bodyPartData && bodyPartData->GetFormID() == 0x1d;
 	}
 
-	
-
-	void OnMeleeHitHook::UnequipAll(RE::Actor* a_actor)
-	{
-		uniqueLocker lock(mtx_Inventory);
-		auto         itt = _Inventory.find(a_actor);
-		if (itt == _Inventory.end()) {
-			std::vector<RE::TESBoundObject*> Hen;
-			_Inventory.insert({ a_actor, Hen });
-		}
-
-		for (auto it = _Inventory.begin(); it != _Inventory.end(); ++it) {
-			if (it->first == a_actor) {
-				auto inv = a_actor->GetInventory();
-				for (auto& [item, data] : inv) {
-					const auto& [count, entry] = data;
-					if (count > 0 && entry->IsWorn()) {
-						RE::ActorEquipManager::GetSingleton()->UnequipObject(a_actor, item);
-						it->second.push_back(item);
-					}
-				}
-				break;
-			}
-			continue;
-		}
-	}
-
-	void OnMeleeHitHook::Re_EquipAll(RE::Actor* a_actor)
-	{
-		uniqueLocker lock(mtx_Inventory);
-		for (auto it = _Inventory.begin(); it != _Inventory.end(); ++it) {
-			if (it->first == a_actor) {
-				for (auto item : it->second) {
-					RE::ActorEquipManager::GetSingleton()->EquipObject(a_actor, item);
-				}
-				_Inventory.erase(it);
-				break;
-			}
-			continue;
-		}
-	}
-
 	bool OnMeleeHitHook::isPowerAttacking(RE::Actor* a_actor)
 	{
 		auto currentProcess = a_actor->GetActorRuntimeData().currentProcess;
@@ -560,37 +518,6 @@ namespace hooks
 		}
 	};
 
-	bool DrinkPotionHook::Thunk(RE::Character *a_actor, RE::AlchemyItem *a_potion, RE::ExtraDataList *a_extralist)
-	{
-		// if (a_actor)
-		// {
-		// 	// logger::info("{} is requesting to drink potion", a_actor->GetName());
-
-		// 	if (!(a_actor->Is3DLoaded() && a_actor->GetParentCell() && a_actor->GetParentCell()->cellState && a_actor->GetParentCell()->cellState == RE::TESObjectCELL::CellState::kAttached))
-		// 	{
-		// 		if (a_potion)
-		// 		{
-		// 			logger::info("Preventing {} from drinking {} in unloaded cell", a_actor->GetName(), a_potion->GetName());
-		// 		}
-		// 		else
-		// 		{
-		// 			logger::info("Preventing {} from drinking a potion in unloaded cell", a_actor->GetName());
-		// 		}
-
-		// 		return false;
-		// 	}
-		// }
-		return _func(a_actor, a_potion, a_extralist);
-	}
-
-	void DrinkPotionHook::Install()
-	{
-		logger::info("Sinking drink potion hook for NPC");
-		REL::Relocation<uintptr_t> npcPtr{RE::VTABLE_Character[0]};
-		DrinkPotionHook::_func = npcPtr.write_vfunc(0x10F, DrinkPotionHook::Thunk);
-		logger::info("Sinking complete.");
-	}
-
 	float OnMeleeHitHook::get_angle_he_me(RE::Actor *me, RE::Actor *he, RE::BGSAttackData *attackdata){
 		auto he_me = PolarAngle(me->GetPosition() - he->GetPosition());
 		auto head = PolarAngle(he->GetHeading(false) * 180.0f / PI);
@@ -622,105 +549,6 @@ namespace hooks
 
 		pos = targetPoint->world.translate;
 	}
-
-	bool OnMeleeHitHook::PredictAimProjectile(RE::NiPoint3 a_projectilePos, RE::NiPoint3 a_targetPosition, RE::NiPoint3 a_targetVelocity, float a_gravity, RE::NiPoint3 &a_projectileVelocity)
-	{
-		// http://ringofblades.com/Blades/Code/PredictiveAim.cs
-
-		float projectileSpeedSquared = a_projectileVelocity.SqrLength();
-		float projectileSpeed = std::sqrtf(projectileSpeedSquared);
-
-		if (projectileSpeed <= 0.f || a_projectilePos == a_targetPosition)
-		{
-			return false;
-		}
-
-		float targetSpeedSquared = a_targetVelocity.SqrLength();
-		float targetSpeed = std::sqrtf(targetSpeedSquared);
-		RE::NiPoint3 targetToProjectile = a_projectilePos - a_targetPosition;
-		float distanceSquared = targetToProjectile.SqrLength();
-		float distance = std::sqrtf(distanceSquared);
-		RE::NiPoint3 direction = targetToProjectile;
-		direction.Unitize();
-		RE::NiPoint3 targetVelocityDirection = a_targetVelocity;
-		targetVelocityDirection.Unitize();
-
-		float cosTheta = (targetSpeedSquared > 0) ? direction.Dot(targetVelocityDirection) : 1.0f;
-
-		bool bValidSolutionFound = true;
-		float t;
-
-		if (ApproximatelyEqual(projectileSpeedSquared, targetSpeedSquared))
-		{
-			// We want to avoid div/0 that can result from target and projectile traveling at the same speed
-			// We know that cos(theta) of zero or less means there is no solution, since that would mean B goes backwards or leads to div/0 (infinity)
-			if (cosTheta > 0)
-			{
-				t = 0.5f * distance / (targetSpeed * cosTheta);
-			}
-			else
-			{
-				bValidSolutionFound = false;
-				t = 1;
-			}
-		}
-		else
-		{
-			float a = projectileSpeedSquared - targetSpeedSquared;
-			float b = 2.0f * distance * targetSpeed * cosTheta;
-			float c = -distanceSquared;
-			float discriminant = b * b - 4.0f * a * c;
-
-			if (discriminant < 0)
-			{
-				// NaN
-				bValidSolutionFound = false;
-				t = 1;
-			}
-			else
-			{
-				// a will never be zero
-				float uglyNumber = sqrtf(discriminant);
-				float t0 = 0.5f * (-b + uglyNumber) / a;
-				float t1 = 0.5f * (-b - uglyNumber) / a;
-
-				// Assign the lowest positive time to t to aim at the earliest hit
-				t = min(t0, t1);
-				if (t < FLT_EPSILON)
-				{
-					t = max(t0, t1);
-				}
-
-				if (t < FLT_EPSILON)
-				{
-					// Time can't flow backwards when it comes to aiming.
-					// No real solution was found, take a wild shot at the target's future location
-					bValidSolutionFound = false;
-					t = 1;
-				}
-			}
-		}
-
-		a_projectileVelocity = a_targetVelocity + (-targetToProjectile / t);
-
-		if (!bValidSolutionFound)
-		{
-			a_projectileVelocity.Unitize();
-			a_projectileVelocity *= projectileSpeed;
-		}
-
-		if (!ApproximatelyEqual(a_gravity, 0.f))
-		{
-			float netFallDistance = (a_projectileVelocity * t).z;
-			float gravityCompensationSpeed = (netFallDistance + 0.5f * a_gravity * t * t) / t;
-			a_projectileVelocity.z = gravityCompensationSpeed;
-		}
-
-		return bValidSolutionFound;
-	}
-
-
-
 
 
 	float OnMeleeHitHook::get_personal_survivalRatio(RE::Actor *protagonist, RE::Actor *combat_target)
@@ -940,7 +768,7 @@ namespace hooks
 		auto* eventSourceHolder = RE::ScriptEventSourceHolder::GetSingleton();
 		// eventSourceHolder->AddEventSink<RE::TESSwitchRaceCompleteEvent>(eventSink);
 		//eventSourceHolder->AddEventSink<RE::TESEquipEvent>(eventSink);
-		//eventSourceHolder->AddEventSink<RE::TESCombatEvent>(eventSink);
+		eventSourceHolder->AddEventSink<RE::TESCombatEvent>(eventSink);
 		//eventSourceHolder->AddEventSink<RE::TESActorLocationChangeEvent>(eventSink);
 		//eventSourceHolder->AddEventSink<RE::TESSpellCastEvent>(eventSink);
 		//eventSourceHolder->AddEventSink<RE::TESDeathEvent>(eventSink);
@@ -1121,175 +949,11 @@ namespace hooks
 		}
 	}
 
-
-	void OnMeleeHitHook::register_allied_target(RE::Actor *a_actor, RE::TESObjectREFR *a_ally)
-	{
-		auto itt = _AlliedTarget.find(a_actor);
-		if (itt == _AlliedTarget.end())
-		{
-			_AlliedTarget.insert({a_actor, a_ally});
-		}
-		else
-		{
-			itt->second = a_ally;
-		}
-	}
-	
-
-	RE::TESObjectREFR *OnMeleeHitHook::get_allied_target(RE::Actor *a_actor)
-	{
-		RE::TESObjectREFR * a_ally = nullptr;
-		for (auto it = _AlliedTarget.begin(); it != _AlliedTarget.end(); ++it)
-		{
-			if (it->first == a_actor)
-			{
-				if (it->second)
-				{
-					a_ally = it->second;
-				}
-				_AlliedTarget.erase(it);
-				break;
-			}
-		}
-		return a_ally;
-	}
-
-	void OnMeleeHitHook::clear_allied_targets([[maybe_unused]] RE::Actor *a_actor, bool clear_all)
-	{
-		if(!clear_all){
-			auto itt = _AlliedTarget.find(a_actor);
-			if (itt != _AlliedTarget.end())
-			{
-				_AlliedTarget.erase(itt);
-			}
-		}else{
-			for (auto it = _AlliedTarget.begin(); it != _AlliedTarget.end(); ++it)
-			{
-				if (it->first)
-				{
-					_AlliedTarget.erase(it);
-				}
-			}
-		}
-	}
-
-	void OnMeleeHitHook::Mod_CombatInventory_Claws(RE::Actor *a_actor, RE::CombatController *a_controller)
-	{
-
-		if (auto a_invent = a_controller->inventory; a_invent)
-		{
-			float score = 0;
-			bool modded = false;
-			int counter = 0;
-			float highest_score = 0;
-			RE::NiPointer<RE::CombatInventoryItem> highest_position = nullptr;
-			RE::NiPointer<RE::CombatInventoryItem> position = nullptr;
-			std::vector<RE::NiPointer<RE::CombatInventoryItem>> modded_store;
-
-			for (auto invent_item : *a_invent->inventoryItems)
-			{
-				if (invent_item && invent_item.get() && invent_item.get()->item && invent_item.get()->itemScore 
-				&& invent_item.get()->item->formID && invent_item.get()->item->formID == 0x1F4)
-				{
-					if (invent_item.get()->itemScore >= 500000)
-					{
-						if (!modded)
-						{
-							modded = true;
-						}
-						if (invent_item.get()->itemScore > highest_score)
-						{
-							highest_score = invent_item.get()->itemScore;
-							highest_position = invent_item;
-						}
-						counter++;
-						modded_store.push_back(invent_item);
-					}
-					else
-					{
-						if (invent_item.get()->itemScore > score)
-						{
-							score = invent_item.get()->itemScore;
-							position = invent_item;
-						}
-					}
-				}
-			}
-
-			if (modded)
-			{
-				if (counter > 1)
-				{
-					for (auto &a_modded_store : modded_store)
-					{
-						if (a_modded_store && a_modded_store.get() && highest_position && highest_position.get())
-						{
-							if (a_modded_store == highest_position)
-							{
-								continue;
-							}
-							else
-							{
-								a_modded_store.get()->itemScore -= 500000;
-							}
-						}
-					}
-				}
-				else
-				{
-					return;
-				}
-			}
-			else if (position && position.get() && score > 0)
-			{
-				if (!GetBoolVariable(a_actor, "bRBL_IsModdedClaws"))
-				{
-					a_actor->SetGraphVariableBool("bRBL_IsModdedClaws", true);
-				}
-				position.get()->itemScore += 500000;
-			}
-		}
-	}
-
-	void OnMeleeHitHook::Mod_CombatInventory_Claws_Reset(RE::Actor *a_actor, RE::CombatController *a_controller)
-	{
-
-		if (auto a_invent = a_controller->inventory; a_invent)
-		{
-			for (auto invent_item : *a_invent->inventoryItems)
-			{
-				if (invent_item && invent_item.get() && invent_item.get()->item && invent_item.get()->itemScore && invent_item.get()->item->formID 
-				&& invent_item.get()->item->formID == 0x1F4)
-				{
-					if (invent_item.get()->itemScore >= 500000)
-					{
-						invent_item.get()->itemScore -= 500000;
-					}
-				}
-			}
-			a_actor->SetGraphVariableBool("bRBL_IsModdedClaws", false);
-		}
-	}
-
 	void OnMeleeHitHook::Update(RE::Actor* a_actor, [[maybe_unused]] float a_delta)
 	{
 		if (a_actor->GetActorRuntimeData().currentProcess && a_actor->GetActorRuntimeData().currentProcess->InHighProcess() && a_actor->Is3DLoaded() && a_actor->IsInCombat()){
 
 			// GetSingleton()->Process_Updates(a_actor, std::chrono::steady_clock::now());
-
-			if (auto combatcontrol = a_actor->GetActorRuntimeData().combatController; combatcontrol)
-			{
-				if (getrace_IsWerebeast(a_actor))
-				{
-					Mod_CombatInventory_Claws(a_actor, combatcontrol);
-				}
-				else if (GetBoolVariable(a_actor, "bRBL_IsModdedClaws"))
-				{
-					Mod_CombatInventory_Claws_Reset(a_actor, combatcontrol);
-				}
-			}
-
-			// RE::TESActionData a_data;
 		}
 	}
 

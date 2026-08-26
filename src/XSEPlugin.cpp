@@ -6,7 +6,7 @@ void MessageHandler(SKSE::MessagingInterface::Message *a_msg)
 	{
 	case SKSE::MessagingInterface::kDataLoaded:
 		// hooks::animEventHandler::Register(false, true);
-		// hooks::OnMeleeHitHook::install();
+		hooks::OnMeleeHitHook::install();
 		// hooks::InputEventHandler::SinkEventHandlers();
 		//hooks::install_postload();
 
@@ -32,6 +32,5 @@ void Init()
 }
 
 void Load(){
-	hooks::OnMeleeHitHook::install_protected();
-	// hooks::DrinkPotionHook::Install();
+	// hooks::OnMeleeHitHook::install_protected();
 }

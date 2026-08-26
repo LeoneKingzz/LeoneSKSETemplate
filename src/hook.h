@@ -20,8 +20,6 @@ static float& g_deltaTime = (*(float*)RELOCATION_ID(523660, 410199).address());
 namespace hooks
 {
 	// static float& g_deltaTime = (*(float*)RELOCATION_ID(523660, 410199).address());
-	using uniqueLocker = std::unique_lock<std::shared_mutex>;
-	using sharedLocker = std::shared_lock<std::shared_mutex>;
 	using VM = RE::BSScript::Internal::VirtualMachine;
 	using StackID = RE::VMStackID;
 #define STATIC_ARGS [[maybe_unused]] VM *a_vm, [[maybe_unused]] StackID a_stackID, RE::StaticFunctionTag *
@@ -51,17 +49,6 @@ namespace hooks
 	bool HasBoundWeaponEquipped(const RE::Actor *a_actor, RE::MagicSystem::CastingSource type);
 	bool GetLineOfSight(const RE::Actor *a_actor, const RE::Actor *a_target, float a_comparison_value);
 	bool GetIsGhost(const RE::Actor *a_actor, float a_comparison_value);
-
-	struct DrinkPotionHook
-	{
-	public:
-		static bool Thunk(RE::Character *a_actor, RE::AlchemyItem *a_potion, RE::ExtraDataList *a_extralist);
-
-		inline static REL::Relocation<decltype(&Thunk)> _func;
-
-		static void Install();
-	};
-
 
 
 	template <class T>
@@ -179,8 +166,6 @@ namespace hooks
 	    float GenerateRandomFloat(float value_a, float value_b);
 		double GenerateRandomDouble(double value_a, double value_b);
 		static bool IsMeleeOnly(RE::Actor *a_actor);
-		void UnequipAll(RE::Actor* a_actor);
-		void Re_EquipAll(RE::Actor *a_actor);
 		RE::BGSAttackData *get_attackData(RE::Actor *a);
 
 		float confidence_threshold(RE::Actor *a_actor, int confidence, bool inverse = false);
@@ -191,11 +176,7 @@ namespace hooks
 		static bool GetBoolVariable(RE::Actor *a_actor, std::string a_string);
 		static int GetIntVariable(RE::Actor *a_actor, std::string a_string);
 		static float GetFloatVariable(RE::Actor *a_actor, std::string a_string);
-		void register_allied_target(RE::Actor *a_actor, RE::TESObjectREFR *a_ally);
-		RE::TESObjectREFR *get_allied_target(RE::Actor *a_actor);
-		void clear_allied_targets(RE::Actor *a_actor, bool clear_all);
-		static void Mod_CombatInventory_Claws(RE::Actor *a_actor, RE::CombatController *a_controller);
-		static void Mod_CombatInventory_Claws_Reset(RE::Actor *a_actor, RE::CombatController *a_controller);
+
 		static bool getrace_IsWerebeast(RE::Actor *a_actor)
 		{
 			bool result = false;
@@ -244,7 +225,6 @@ namespace hooks
 			REL::Relocation<func_t> func{RELOCATION_ID(33630, 34408)};
 			return func(self, a_refund);
 		};
-		static bool PredictAimProjectile(RE::NiPoint3 a_projectilePos, RE::NiPoint3 a_targetPosition, RE::NiPoint3 a_targetVelocity, float a_gravity, RE::NiPoint3 &a_projectileVelocity);
 
 		static inline bool ApproximatelyEqual(float A, float B)
 		{
@@ -468,7 +448,9 @@ namespace hooks
 
 			return result;
 		}
-		
+
+		std::shared_mutex mtx_Timer;
+		std::unordered_map<RE::Actor *, std::vector<std::tuple<RE::MagicCaster *, std::chrono::steady_clock::time_point, std::chrono::milliseconds, std::string>>> _Timer;
 
 	private:
 		OnMeleeHitHook() = default;
@@ -482,15 +464,6 @@ namespace hooks
 		std::random_device rd;
 		//PRECISION_API::IVPrecision1* _precision_API;
 		//static void PrecisionWeaponsCallback_Post(const PRECISION_API::PrecisionHitData& a_precisionHitData, const RE::HitData& a_hitdata);
-		std::unordered_map<RE::Actor*, std::vector<RE::TESBoundObject*>> _Inventory;
-		std::unordered_map<RE::Actor *, std::vector<RE::Projectile *>> _RunesCast;
-		std::unordered_map<RE::Actor *, RE::TESObjectREFR *> _AlliedTarget;
-		std::unordered_map<RE::Actor *, std::vector<std::pair<RE::TESBoundObject *, std::chrono::steady_clock::time_point>>> _Spells;
-
-		std::shared_mutex mtx_RunesCast;
-		std::shared_mutex mtx_Inventory;
-		std::shared_mutex mtx_AlliedTarget;
-		std::shared_mutex mtx__Spells;
 
 	protected:
 
@@ -509,7 +482,6 @@ namespace hooks
 		static void Install_Update(){
 			stl::write_vfunc<RE::Character, 0xAD, Actor_Update>();
 		}
-		std::unordered_map<RE::Actor *, std::vector<std::tuple<RE::MagicCaster *, std::chrono::steady_clock::time_point, std::chrono::milliseconds, std::string>>> _Timer;
 	};
 
 	class InputEventHandler : public RE::BSTEventSink<RE::InputEvent*>
