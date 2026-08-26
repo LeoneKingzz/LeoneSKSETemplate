@@ -68,16 +68,17 @@ namespace hooks
 	// Difficulty
 	enum class Difficulty : std::uint8_t
 	{
-		Adept = 0,	      // Adept
-		Expert = 1,	      // Expert
-		Master = 2,       // Master
-		Legendary = 3,	  // Legendary
+		None = 0,     //Unset
+		Adept = 1,	   // Adept
+		Expert = 2,	   // Expert
+		Master = 3,	   // Master
+		Legendary = 4, // Legendary
 	};
 
 	// Combat context information (multiple enemies, allies, threat assessment)
 	struct DifficultyState
 	{
-		Difficulty level = Difficulty::Adept;
+		Difficulty level = Difficulty::None;
 
 	}difficulty;
 
