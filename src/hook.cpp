@@ -356,31 +356,31 @@ namespace hooks
 
 	void AdjustDifficulty(Difficulty level)
 	{
-		auto &diff = RE::PlayerCharacter::GetSingleton()->GetGameStatsData().difficulty;
+		auto player = RE::PlayerCharacter::GetSingleton();
 
 		switch (level)
 		{
 		case Difficulty::Adept:
-			diff = 2;
+		    player->GetGameStatsData().difficulty = 2;
 			break;
 
 		case Difficulty::Expert:
-			diff = 3;
+			player->GetGameStatsData().difficulty = 3;
 			break;
 
 		case Difficulty::Master:
-			diff = 4;
+			player->GetGameStatsData().difficulty = 4;
 			break;
 
 		case Difficulty::Legendary:
-			diff = 5;
+			player->GetGameStatsData().difficulty = 5;
 			break;
 
 		default:
 			break;
 		}
 
-		logger::info("Diff {}", diff);
+		logger::info("Diff {}", player->GetGameStatsData().difficulty);
 	}
 
 	void LoadSettings()
