@@ -115,15 +115,15 @@ namespace hooks
 
 			int iBasePreference = 2;
 
-			double fDiffMultHPByPCVE = 1.0;
-			double fDiffMultHPByPCE = 1.0;
+			double fDiffMultHPByPCVE = 1.5;
+			double fDiffMultHPByPCE = 1.25;
 			double fDiffMultHPByPCN = 1.0;
 			double fDiffMultHPByPCH = 0.75;
 			double fDiffMultHPByPCVH = 0.5;
 			double fDiffMultHPByPCL = 0.25;
 
-			double fDiffMultHPToPCVE = 1.0;
-			double fDiffMultHPToPCE = 1.0;
+			double fDiffMultHPToPCVE = 0.66;
+			double fDiffMultHPToPCE = 0.83;
 			double fDiffMultHPToPCN = 1.0;
 			double fDiffMultHPToPCH = 1.17;
 			double fDiffMultHPToPCVH = 1.34;
