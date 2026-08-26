@@ -253,12 +253,12 @@ namespace hooks
 		DS->general.fDiffMultHPToPCVH = a_ini.GetDoubleValue(section, "fDiffMultHPToPCVH", DS->general.fDiffMultHPToPCVH);
 		DS->general.fDiffMultHPToPCL = a_ini.GetDoubleValue(section, "fDiffMultHPToPCL", DS->general.fDiffMultHPToPCL);
 
-		a_ini.SetDoubleValue(section, "fDiffMultHPToPCVE", DS->general.fDiffMultHPToPCVE, ";Damage dealt on Novice");
-		a_ini.SetDoubleValue(section, "fDiffMultHPToPCE", DS->general.fDiffMultHPToPCE, ";Damage dealt on Apprentrice");
-		a_ini.SetDoubleValue(section, "fDiffMultHPToPCN", DS->general.fDiffMultHPToPCN, ";Damage dealt on Adept");
-		a_ini.SetDoubleValue(section, "fDiffMultHPToPCH", DS->general.fDiffMultHPToPCH, ";Damage dealt on Expert");
-		a_ini.SetDoubleValue(section, "fDiffMultHPToPCVH", DS->general.fDiffMultHPToPCVH, ";Damage dealt on Master");
-		a_ini.SetDoubleValue(section, "fDiffMultHPToPCL", DS->general.fDiffMultHPToPCL, ";Damage dealt on Legendary");
+		a_ini.SetDoubleValue(section, "fDiffMultHPToPCVE", DS->general.fDiffMultHPToPCVE, ";Damage received on Novice");
+		a_ini.SetDoubleValue(section, "fDiffMultHPToPCE", DS->general.fDiffMultHPToPCE, ";Damage received on Apprentrice");
+		a_ini.SetDoubleValue(section, "fDiffMultHPToPCN", DS->general.fDiffMultHPToPCN, ";Damage received on Adept");
+		a_ini.SetDoubleValue(section, "fDiffMultHPToPCH", DS->general.fDiffMultHPToPCH, ";Damage received on Expert");
+		a_ini.SetDoubleValue(section, "fDiffMultHPToPCVH", DS->general.fDiffMultHPToPCVH, ";Damage received on Master");
+		a_ini.SetDoubleValue(section, "fDiffMultHPToPCL", DS->general.fDiffMultHPToPCL, ";Damage received on Legendary");
 
 		SetBaseDifficulty(DS->general.iBasePreference);
 	}
