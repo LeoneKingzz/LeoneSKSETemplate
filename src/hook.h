@@ -40,6 +40,7 @@ namespace hooks
 	bool IsValidLifeState(RE::Actor *a_actor, bool checkDeath = false);
 
 	int GetPlayerFollowerCount();
+	bool IsInSpecialCombatState(RE::Actor *a_actor);
 
 	enum class Difficulty : std::uint32_t
 	{

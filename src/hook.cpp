@@ -23,17 +23,54 @@ namespace hooks
 		return result;
 	}
 
+	bool IsInSpecialCombatState(RE::Actor *a_actor)
+	{
+
+		if (const auto base = a_actor->GetActorBase(); base)
+		{
+			for (const auto &factionInfo : base->factions)
+			{
+				if (factionInfo.faction && factionInfo.rank >= 0)
+				{
+					if (factionInfo.faction->HasSpecialCombatState())
+					{
+						return true;
+					}
+				}
+			}
+		}
+
+		if (const auto factionChanges = a_actor->extraList.GetByType<RE::ExtraFactionChanges>(); factionChanges)
+		{
+			for (const auto &change : factionChanges->factionChanges)
+			{
+				if (change.faction && change.rank >= 0)
+				{
+					if (change.faction->HasSpecialCombatState())
+					{
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	};
+
 	int GetPlayerFollowerCount()
 	{
 		int result = 0;
 
-		if (const auto processLists = RE::ProcessLists::GetSingleton(); processLists)
+		if (!IsInSpecialCombatState(RE::PlayerCharacter::GetSingleton()))
 		{
-			for (auto &actorHandle : processLists->highActorHandles)
+			if (const auto processLists = RE::ProcessLists::GetSingleton(); processLists)
 			{
-				if (auto actor = actorHandle.get(); actor && actor->IsPlayerTeammate() && actor->Is3DLoaded() && !actor->HasKeywordString("ActorTypeHorse"))
+				for (auto &actorHandle : processLists->highActorHandles)
 				{
-					result += 1;
+					if (auto actor = actorHandle.get(); actor && actor->IsPlayerTeammate() && actor->Is3DLoaded() && !actor->HasKeywordString("ActorTypeHorse"))
+					{
+						result += 1;
+					}
 				}
 			}
 		}
