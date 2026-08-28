@@ -131,15 +131,15 @@ namespace hooks
 
 			default:
 
-				if ((int)difficulty.currentlevel != (int)difficulty.BasePreference + (Settings::GetSingleton()->general.iDiffIncrement * followerCount))
+				if ((int)difficulty.currentlevel != (int)difficulty.BasePreference + (static_cast<int>(std::round(Settings::GetSingleton()->general.iDiffIncrement)) * followerCount))
 				{
-					if (((int)difficulty.BasePreference + (Settings::GetSingleton()->general.iDiffIncrement * followerCount)) > 5)
+					if (((int)difficulty.BasePreference + (static_cast<int>(std::round(Settings::GetSingleton()->general.iDiffIncrement)) * followerCount)) > 5)
 					{
 						difficulty.currentlevel = Difficulty::Legendary;
 					}
 					else
 					{
-						difficulty.currentlevel = (Difficulty)((int)difficulty.BasePreference + (Settings::GetSingleton()->general.iDiffIncrement * followerCount));
+						difficulty.currentlevel = (Difficulty)((int)difficulty.BasePreference + (static_cast<int>(std::round(Settings::GetSingleton()->general.iDiffIncrement)) * followerCount));
 					}
 
 					AdjustDifficulty(difficulty.currentlevel);
@@ -255,8 +255,8 @@ namespace hooks
 		DS->general.iBasePreference = static_cast<int>(a_ini.GetLongValue(section, "iBasePreference", DS->general.iBasePreference));
 		a_ini.SetLongValue(section, "iBasePreference", DS->general.iBasePreference, ";Base difficulty preference with no followers. Range = 0-5. E.g. 0 = Novice | 5 = Legendary");
 
-		DS->general.iDiffIncrement = static_cast<int>(a_ini.GetLongValue(section, "iDiffIncrement", DS->general.iDiffIncrement));
-		a_ini.SetLongValue(section, "iDiffIncrement", DS->general.iDiffIncrement, ";The amount the increase the difficulty by per follower in player's party");
+		DS->general.iDiffIncrement = a_ini.GetDoubleValue(section, "iDiffIncrement", DS->general.iDiffIncrement);
+		a_ini.SetDoubleValue(section, "iDiffIncrement", DS->general.iDiffIncrement, ";The amount the increase the difficulty by per follower in player's party");
 
 		DS->general.fDiffMultHPByPCVE = a_ini.GetDoubleValue(section, "fDiffMultHPByPCVE", DS->general.fDiffMultHPByPCVE);
 		DS->general.fDiffMultHPByPCE = a_ini.GetDoubleValue(section, "fDiffMultHPByPCE", DS->general.fDiffMultHPByPCE);
